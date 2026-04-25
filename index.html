@@ -119,7 +119,13 @@ button:hover {
   <input id="email" placeholder="Tài khoản">
   <input id="password" placeholder="Mật khẩu">
   <button onclick="saveAccount()">Lưu</button>
-  <h3>Lịch sử</h3>
+  <h3>
+  Lịch sử (
+  Tổng: <span id="total">0</span> |
+  Đã dùng: <span id="usedCount">0</span>
+  )
+</h3>
+
   <div id="list"></div>
 </div>
 <script type="module">
@@ -162,29 +168,43 @@ function loadAccounts() {
     orderBy("time", "desc")
   );
   onSnapshot(q, (snapshot) => {
-    list.innerHTML = "";
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      console.log("LOAD:", docSnap.id, data);
-      const div = document.createElement("div");
-      div.className = "account";
-      div.innerHTML = `
-  <div class="account-info">
-    <div><b>Tài khoản:</b> ${data.email}</div>
-    <div><b>Mật khẩu:</b> ${data.password}</div>
-  </div>
+  list.innerHTML = "";
 
-  <div class="actions">
-    <button onclick="copyText('${data.email}')">Copy TK</button>
-    <button onclick="copyText('${data.password}')">Copy MK</button>
-    <button class="${data.used ? 'used' : ''}" onclick="markUsed('${docSnap.id}')">
-      ${data.used ? 'Đã dùng' : 'Đánh dấu'}
-    </button>
-    <button class="delete" onclick="deleteAccount('${docSnap.id}')">Xóa</button>
-  </div>
-`;
-      list.appendChild(div);
-    });
+  let used = 0;
+
+  // 👉 tổng số acc
+  document.getElementById("total").innerText = snapshot.size;
+
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+
+    // 👉 đếm đã dùng
+    if (data.used) used++;
+
+    const div = document.createElement("div");
+    div.className = "account";
+
+    div.innerHTML = `
+      <div class="account-info">
+        <div><b>Tài khoản:</b> ${data.email}</div>
+        <div><b>Mật khẩu:</b> ${data.password}</div>
+      </div>
+
+      <div class="actions">
+        <button onclick="copyText('${data.email}')">Copy TK</button>
+        <button onclick="copyText('${data.password}')">Copy MK</button>
+        <button class="${data.used ? 'used' : ''}" onclick="markUsed('${docSnap.id}')">
+          ${data.used ? 'Đã dùng' : 'Đánh dấu'}
+        </button>
+        <button class="delete" onclick="deleteAccount('${docSnap.id}')">Xóa</button>
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
+
+  // 👉 cập nhật số đã dùng
+  document.getElementById("usedCount").innerText = used;
   });
 }
 window.markUsed = async function (id) {
