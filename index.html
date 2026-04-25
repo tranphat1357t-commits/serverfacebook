@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý tài khoản FB</title>
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  padding: 20px;
+}
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+}
+input, button {
+  padding: 10px;
+  margin: 5px 0;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+}
+button {
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  width: auto;          
+  padding: 6px 12px;    
+  font-size: 14px;
+}
+.used {
+  background: green;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+.account {
+  display: flex;
+  justify-content: space-between;
+  background: #1e293b;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+}
+.used {
+  background: green;
+}
+.account {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.account button {
+  padding: 5px 10px;
+  font-size: 13px;
+}
+.top-name {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  font-size: 14px;
+  color: #60a5fa;
+  opacity: 0.9;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+  <div class="top-name">
+  𝐍𝐠𝐮𝐲𝐞̂̃𝐧 𝐃𝐢̀𝐧𝐡 𝐐𝐮𝐚̂𝐧 (𝐁𝐫𝐢𝐚𝐧 𝐂𝐡𝐞𝐚𝐭 𝐈𝐎𝐒)
+  </div>
+<div class="container">
+  <h2>Lưu tài khoản Facebook</h2>
+  <input id="email" placeholder="Tài khoản">
+  <input id="password" placeholder="Mật khẩu">
+  <button onclick="saveAccount()">Lưu</button>
+  <h3>Lịch sử</h3>
+  <div id="list"></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyDS9CIoprI_iFq57dl55edM-_nLuxDYW14",
+  authDomain: "taikhoanfb-b011b.firebaseapp.com",
+  projectId: "taikhoanfb-b011b"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window.saveAccount = async function () {
+  try {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    if (!email || !password) {
+      alert("Nhập đầy đủ!");
+      return;
+    }
+    await addDoc(collection(db, "accounts"), {
+      email: email,
+      password: password,
+      used: false,
+      time: new Date()
+    });
+    console.log("Đã lưu thành công");
+    document.getElementById("email").value = "";
+    document.getElementById("password").value = "";
+  } catch (err) {
+    console.error("Lỗi khi lưu:", err);
+    alert("Lỗi lưu dữ liệu (xem console)");
+  }
+};
+import { query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+function loadAccounts() {
+  const list = document.getElementById("list");
+
+  const q = query(
+    collection(db, "accounts"),
+    orderBy("time", "desc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    list.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+
+      console.log("LOAD:", docSnap.id, data);
+
+      const div = document.createElement("div");
+      div.className = "account";
+
+      div.innerHTML = `
+  <div>
+    <b>Tài khoản:</b> ${data.email}<br>
+    <b>Mật khẩu:</b> ${data.password}
+  </div>
+
+  <div style="display:flex; gap:6px; align-items:center;">
+    <button onclick="copyText('${data.email}')">Copy Tài Khoản</button>
+    <button onclick="copyText('${data.password}')">Copy Mật Khẩu</button>
+
+    <button class="${data.used ? 'used' : ''}" onclick="markUsed('${docSnap.id}')">
+      ${data.used ? 'Đã dùng' : 'Đánh dấu'}
+    </button>
+  </div>
+`;
+
+
+      list.appendChild(div);
+    });
+  });
+}
+window.markUsed = async function (id) {
+  try {
+    const ref = doc(db, "accounts", id);
+    await updateDoc(ref, {
+      used: true
+    });
+    console.log("Đã update:", id);
+    loadAccounts();
+  } catch (err) {
+    console.error("Lỗi update:", err);
+    alert(err.message);
+  }
+};
+window.copyText = function(text) {
+  navigator.clipboard.writeText(text);
+  alert("Đã copy: " + text);
+}
+loadAccounts();
+</script>
+</body>
+</html>
