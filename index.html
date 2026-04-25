@@ -8,66 +8,79 @@ body {
   font-family: Arial;
   background: #0f172a;
   color: white;
-  display: flex;
-  padding: 20px;
+  margin: 0;
+  padding: 10px;
 }
 .container {
   width: 100%;
-  max-width: 900px;
+  max-width: 600px;
   margin: auto;
 }
-input, button {
+input {
   padding: 10px;
   margin: 5px 0;
   width: 100%;
   border: none;
   border-radius: 6px;
+  font-size: 14px;
 }
 button {
   background: #2563eb;
   color: white;
   cursor: pointer;
-  width: auto;          
-  padding: 6px 12px;    
-  font-size: 14px;
-}
-.used {
-  background: green;
-  padding: 6px 12px;
-  font-size: 14px;
-}
-.account {
-  display: flex;
-  justify-content: space-between;
-  background: #1e293b;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 6px;
-}
-.used {
-  background: green;
-}
-.account {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.account button {
-  padding: 5px 10px;
+  padding: 8px 10px;
   font-size: 13px;
+  border-radius: 6px;
+  border: none;
+  flex: 1; 
+  text-align: center;
+}
+.used {
+  background: green;
+}
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #1e293b;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+.actions {
+  display: flex;
+  gap: 6px;
 }
 .top-name {
   position: fixed;
-  top: 10px;
-  right: 20px;
-  font-size: 14px;
+  top: 5px;
+  right: 10px;
+  font-size: 12px;
   color: #60a5fa;
-  opacity: 0.9;
+  opacity: 0.8;
   font-weight: bold;
+}
+@media (min-width: 768px) {
+  .account {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .account-info {
+    flex: 1;
+  }
+  .actions {
+    flex: 1;
+    justify-content: flex-end;
+  }
+  .actions button {
+    flex: unset;
+    min-width: 110px; 
+  }
 }
 </style>
 </head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <body>
   <div class="top-name">
   𝐍𝐠𝐮𝐲𝐞̂̃𝐧 𝐃𝐢̀𝐧𝐡 𝐐𝐮𝐚̂𝐧 (𝐁𝐫𝐢𝐚𝐧 𝐂𝐡𝐞𝐚𝐭 𝐈𝐎𝐒)
@@ -115,30 +128,23 @@ window.saveAccount = async function () {
 import { query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 function loadAccounts() {
   const list = document.getElementById("list");
-
   const q = query(
     collection(db, "accounts"),
     orderBy("time", "desc")
   );
-
   onSnapshot(q, (snapshot) => {
     list.innerHTML = "";
-
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
-
       console.log("LOAD:", docSnap.id, data);
-
       const div = document.createElement("div");
       div.className = "account";
-
       div.innerHTML = `
   <div>
     <b>Tài khoản:</b> ${data.email}<br>
     <b>Mật khẩu:</b> ${data.password}
   </div>
-
-  <div style="display:flex; gap:6px; align-items:center;">
+  <div class="actions">
     <button onclick="copyText('${data.email}')">Copy Tài Khoản</button>
     <button onclick="copyText('${data.password}')">Copy Mật Khẩu</button>
 
@@ -147,8 +153,6 @@ function loadAccounts() {
     </button>
   </div>
 `;
-
-
       list.appendChild(div);
     });
   });
