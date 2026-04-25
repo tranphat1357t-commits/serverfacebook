@@ -9,75 +9,104 @@ body {
   background: #0f172a;
   color: white;
   margin: 0;
-  padding: 10px;
+  padding: 20px;
 }
+
 .container {
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   margin: auto;
 }
+
+h2, h3 {
+  text-align: center;
+}
+
+/* INPUT */
 input {
-  padding: 10px;
-  margin: 5px 0;
+  padding: 12px;
+  margin: 6px 0;
   width: 100%;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
+  outline: none;
 }
+
+/* BUTTON CHUNG */
 button {
   background: #2563eb;
   color: white;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 10px;
   font-size: 13px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
-  flex: 1; 
-  text-align: center;
+  transition: 0.2s;
 }
-.used {
-  background: green;
+
+button:hover {
+  opacity: 0.85;
 }
+
+/* CARD ACCOUNT */
 .account {
+  background: #1e293b;
+  padding: 15px;
+  margin-top: 12px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: #1e293b;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
 }
+
+/* TEXT */
+.account-info {
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* ACTION BUTTONS */
 .actions {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
 }
-.top-name {
-  position: fixed;
-  top: 5px;
-  right: 10px;
-  font-size: 12px;
-  color: #60a5fa;
-  opacity: 0.8;
-  font-weight: bold;
+
+/* MÀU RIÊNG */
+.used {
+  background: #16a34a;
 }
+
+.delete {
+  background: #ef4444;
+}
+
+/* DESKTOP */
 @media (min-width: 768px) {
   .account {
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
   }
+
   .account-info {
     flex: 1;
   }
+
   .actions {
     flex: 1;
+    display: flex;
     justify-content: flex-end;
+    gap: 8px;
   }
+
   .actions button {
-    flex: unset;
-    min-width: 110px; 
+    min-width: 100px;
   }
 }
+
 </style>
 </head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,7 +124,7 @@ button {
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyDS9CIoprI_iFq57dl55edM-_nLuxDYW14",
   authDomain: "taikhoanfb-b011b.firebaseapp.com",
@@ -140,17 +169,18 @@ function loadAccounts() {
       const div = document.createElement("div");
       div.className = "account";
       div.innerHTML = `
-  <div>
-    <b>Tài khoản:</b> ${data.email}<br>
-    <b>Mật khẩu:</b> ${data.password}
+  <div class="account-info">
+    <div><b>Tài khoản:</b> ${data.email}</div>
+    <div><b>Mật khẩu:</b> ${data.password}</div>
   </div>
-  <div class="actions">
-    <button onclick="copyText('${data.email}')">Copy Tài Khoản</button>
-    <button onclick="copyText('${data.password}')">Copy Mật Khẩu</button>
 
+  <div class="actions">
+    <button onclick="copyText('${data.email}')">Copy TK</button>
+    <button onclick="copyText('${data.password}')">Copy MK</button>
     <button class="${data.used ? 'used' : ''}" onclick="markUsed('${docSnap.id}')">
       ${data.used ? 'Đã dùng' : 'Đánh dấu'}
     </button>
+    <button class="delete" onclick="deleteAccount('${docSnap.id}')">Xóa</button>
   </div>
 `;
       list.appendChild(div);
@@ -174,6 +204,19 @@ window.copyText = function(text) {
   navigator.clipboard.writeText(text);
   alert("Đã copy: " + text);
 }
+window.deleteAccount = async function (id) {
+  const confirmDelete = confirm("Bạn có chắc muốn xóa tài khoản này?");
+  if (!confirmDelete) return;
+
+  try {
+    await deleteDoc(doc(db, "accounts", id));
+    console.log("Đã xóa:", id);
+  } catch (err) {
+    console.error("Lỗi xóa:", err);
+    alert(err.message);
+  }
+};
+
 loadAccounts();
 </script>
 </body>
