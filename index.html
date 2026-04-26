@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Quản lý tài khoản FB</title>
+<title>Quản lý tài khoản Facebook</title>
 <style>
 body {
   font-family: Arial;
@@ -11,18 +11,14 @@ body {
   margin: 0;
   padding: 20px;
 }
-
 .container {
   width: 100%;
   max-width: 700px;
   margin: auto;
 }
-
 h2, h3 {
   text-align: center;
 }
-
-/* INPUT */
 input {
   padding: 12px;
   margin: 6px 0;
@@ -32,8 +28,6 @@ input {
   font-size: 14px;
   outline: none;
 }
-
-/* BUTTON CHUNG */
 button {
   background: #2563eb;
   color: white;
@@ -44,12 +38,9 @@ button {
   border: none;
   transition: 0.2s;
 }
-
 button:hover {
   opacity: 0.85;
 }
-
-/* CARD ACCOUNT */
 .account {
   background: #1e293b;
   padding: 15px;
@@ -59,54 +50,41 @@ button:hover {
   flex-direction: column;
   gap: 10px;
 }
-
-/* TEXT */
 .account-info {
   font-size: 14px;
   line-height: 1.6;
   word-break: break-word;
 }
-
-/* ACTION BUTTONS */
 .actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
-
-/* MÀU RIÊNG */
 .used {
   background: #16a34a;
 }
-
 .delete {
   background: #ef4444;
 }
-
-/* DESKTOP */
 @media (min-width: 768px) {
   .account {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
   }
-
   .account-info {
     flex: 1;
   }
-
   .actions {
     flex: 1;
     display: flex;
     justify-content: flex-end;
     gap: 8px;
   }
-
   .actions button {
     min-width: 100px;
   }
 }
-
 </style>
 </head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -125,12 +103,11 @@ button:hover {
   Đã dùng: <span id="usedCount">0</span>
   )
 </h3>
-
   <div id="list"></div>
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyDS9CIoprI_iFq57dl55edM-_nLuxDYW14",
   authDomain: "taikhoanfb-b011b.firebaseapp.com",
@@ -169,41 +146,38 @@ function loadAccounts() {
   );
   onSnapshot(q, (snapshot) => {
   list.innerHTML = "";
-
   let used = 0;
-
-  // 👉 tổng số acc
   document.getElementById("total").innerText = snapshot.size;
-
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
-
-    // 👉 đếm đã dùng
     if (data.used) used++;
-
     const div = document.createElement("div");
     div.className = "account";
+   div.innerHTML = `
+  <div class="account-info">
+  <b>Tài khoản:</b> ${data.email}<br>
+  <b>Mật khẩu:</b> 
+  <span id="pw-${docSnap.id}">******</span>
+</div>
+  <div style="display:flex; gap:6px; align-items:center;">
+    <button onclick="copyText('${data.email}')">Copy TK</button>
+    <button onclick="copyText('${data.password}')">Copy MK</button>
 
-    div.innerHTML = `
-      <div class="account-info">
-        <div><b>Tài khoản:</b> ${data.email}</div>
-        <div><b>Mật khẩu:</b> ${data.password}</div>
-      </div>
+    <button onclick="togglePassword('${docSnap.id}', '${data.password}')">
+      Hiện
+    </button>
 
-      <div class="actions">
-        <button onclick="copyText('${data.email}')">Copy TK</button>
-        <button onclick="copyText('${data.password}')">Copy MK</button>
-        <button class="${data.used ? 'used' : ''}" onclick="markUsed('${docSnap.id}')">
-          ${data.used ? 'Đã dùng' : 'Đánh dấu'}
-        </button>
-        <button class="delete" onclick="deleteAccount('${docSnap.id}')">Xóa</button>
-      </div>
-    `;
+    <button class="${data.used ? 'used' : ''}" onclick="markUsed('${docSnap.id}')">
+      ${data.used ? 'Đã dùng' : 'Đánh dấu'}
+    </button>
 
+    <button onclick="deleteAccount('${docSnap.id}')" style="background:red;">
+      Xóa
+    </button>
+  </div>
+`;
     list.appendChild(div);
   });
-
-  // 👉 cập nhật số đã dùng
   document.getElementById("usedCount").innerText = used;
   });
 }
@@ -224,6 +198,17 @@ window.copyText = function(text) {
   navigator.clipboard.writeText(text);
   alert("Đã copy: " + text);
 }
+window.togglePassword = function(id, password) {
+  const el = document.getElementById("pw-" + id);
+
+  if (!el) return;
+
+  if (el.innerText === "******") {
+    el.innerText = password;
+  } else {
+    el.innerText = "******";
+  }
+};
 window.deleteAccount = async function (id) {
   const confirmDelete = confirm("Bạn có chắc muốn xóa tài khoản này?");
   if (!confirmDelete) return;
@@ -236,7 +221,6 @@ window.deleteAccount = async function (id) {
     alert(err.message);
   }
 };
-
 loadAccounts();
 </script>
 </body>
